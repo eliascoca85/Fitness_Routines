@@ -20,7 +20,7 @@ class _ConfigPageState extends State<ConfigPage> {
   // Cargar la IP guardada (si existe)
   Future<void> _loadServerIP() async {
     final prefs = await SharedPreferences.getInstance();
-    final ip = prefs.getString('server_ip') ?? '192.168.19.134';
+    final ip = prefs.getString('server_ip') ?? '192.168.100.87';
     setState(() {
       ipController.text = ip;
     });
@@ -72,7 +72,7 @@ class _ConfigPageState extends State<ConfigPage> {
                 ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      ipController.text = '192.168.19.134';
+                      ipController.text = '192.168.100.87';
                     });
                   },
                   style: ConfigStyles.presetButtonStyle,
@@ -148,7 +148,7 @@ class _ConfigPageState extends State<ConfigPage> {
               child: Text(
                 'Nota: La dirección IP del servidor puede cambiar según la red.\n\n'
                 'Tus IPs actuales (según ipconfig) son:\n'
-                '• WiFi 1: 192.168.19.134\n'
+                '• WiFi 1: 192.168.100.87\n'
                 '• WiFi 2: 192.168.100.186\n'
                 '• Ethernet: 192.168.56.1\n\n'
                 'Para conexión USB (opción recomendada):\n'

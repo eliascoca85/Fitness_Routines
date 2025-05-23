@@ -28,7 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // Estados
   String message = '';
-  String serverIP = '192.168.19.134';
+  String serverIP = '192.168.100.87';
   bool isLoading = false;
 
   // Listas para alergias y condiciones
@@ -52,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        serverIP = prefs.getString('server_ip') ?? '192.168.19.134';
+        serverIP = prefs.getString('server_ip') ?? '192.168.100.87';
       });
       print('IP del servidor cargada: $serverIP');
     } catch (e) {

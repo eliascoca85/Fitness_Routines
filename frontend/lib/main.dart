@@ -8,13 +8,47 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'config_page.dart';
 import 'styles/index.dart';
 import 'register_page.dart';
+import 'views/home_page.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isLoading = true;
+  Map<String, dynamic>? _userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserSession();
+  }
+
+  Future<void> _checkUserSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userDataString = prefs.getString('user_data');
+
+      if (userDataString != null) {
+        setState(() {
+          _userData = jsonDecode(userDataString);
+        });
+      }
+    } catch (e) {
+      print('Error al verificar sesión: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +56,13 @@ class MyApp extends StatelessWidget {
       title: 'Fitness Routines',
       theme: AppStyles.appTheme,
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: _isLoading
+          ? const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            )
+          : _userData != null
+              ? HomePage(userData: _userData!)
+              : LoginPage(),
     );
   }
 }
@@ -36,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   String message = '';
-  String serverIP = '192.168.19.134'; // Valor predeterminado
+  String serverIP = '192.168.100.87'; // Valor predeterminado
 
   @override
   void initState() {
@@ -49,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        serverIP = prefs.getString('server_ip') ?? '192.168.19.134';
+        serverIP = prefs.getString('server_ip') ?? '192.168.100.87';
       });
       print('IP del servidor cargada: $serverIP');
     } catch (e) {
@@ -127,7 +167,6 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       final data = jsonDecode(response.body);
-
       if (data['success']) {
         // Guardar datos del usuario para sesión persistente
         final prefs = await SharedPreferences.getInstance();
@@ -144,26 +183,12 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
-        );
-
-        // Aquí mostraríamos una pantalla de "Login exitoso"
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Login Exitoso'),
-              content: Text(
-                  'Has iniciado sesión como ${data['user']['nombre']}. En próximas versiones, aquí se mostrará la pantalla principal de la app.'),
-              actions: [
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
+        ); // Navegar a la pantalla de inicio pasando los datos del usuario
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(userData: data['user']),
+          ),
         );
       } else {
         setState(() {

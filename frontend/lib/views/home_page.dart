@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/views/header.dart';
-import 'package:frontend/views/footer.dart';
-import 'package:frontend/views/routine_view.dart';
-import 'package:frontend/views/profile_view.dart';
-import 'package:frontend/views/nutrition_view.dart' as nutrition_view;
-import 'package:frontend/views/progress_view.dart' as progress_view;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../main.dart';
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -16,192 +12,258 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
-  late List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      _buildHomeTab(),
-      _buildRoutinesTab(),
-      _buildNutritionTab(),
-      _buildProgressTab(),
-      _buildProfileTab(),
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  Widget _buildHomeTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.home, size: 100, color: Colors.blue),
-          const SizedBox(height: 20),
-          Text(
-            '¡Bienvenido, ${widget.userData['nombre']}!',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Aquí encontrarás un resumen de tu progreso y actividades recientes',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 30),
-          _buildSummaryCard(
-            title: 'Rutina Recomendada',
-            icon: Icons.recommend,
-            content: 'Entrenamiento de fuerza - 45 minutos',
-            color: Colors.orange[300]!,
-          ),
-          const SizedBox(height: 15),
-          _buildSummaryCard(
-            title: 'Calorías Hoy',
-            icon: Icons.local_fire_department,
-            content: '1,850 / 2,200 kcal',
-            color: Colors.green[300]!,
-          ),
-          const SizedBox(height: 15),
-          _buildSummaryCard(
-            title: 'Próximo Objetivo',
-            icon: Icons.emoji_events,
-            content: 'Completar 5 entrenamientos esta semana',
-            color: Colors.purple[300]!,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard({
-    required String title,
-    required IconData icon,
-    required String content,
-    required Color color,
-  }) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: color, width: 1),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: Colors.white),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+  Future<void> _logout(BuildContext context) async {
+    try {
+      final shouldLogout = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Cerrar sesión'),
+              content: const Text('¿Estás seguro de que deseas salir?'),
+              actions: [
+                TextButton(
+                  child: const Text('Cancelar'),
+                  onPressed: () => Navigator.of(context).pop(false),
                 ),
-                Text(
-                  content,
-                  style: const TextStyle(fontSize: 14),
+                TextButton(
+                  child: const Text('Sí, salir'),
+                  onPressed: () => Navigator.of(context).pop(true),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ) ??
+          false;
 
-  Widget _buildRoutinesTab() {
-    return RoutineView(userData: widget.userData);
-  }
+      if (!shouldLogout) return;
 
-  Widget _buildNutritionTab() {
-    return nutrition_view.NutritionView(userData: widget.userData);
-  }
-
-  Widget _buildProgressTab() {
-    return progress_view.ProgressView(userData: widget.userData);
-  }
-
-  Widget _buildProfileTab() {
-    return ProfileView(userData: widget.userData);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_data');
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+              builder: (context) => MaterialApp(
+                    home: LoginPage(),
+                  )),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      print('Error al cerrar sesión: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppHeader(
-        title: _getTitle(),
-        actions: _getActions(),
+      appBar: AppBar(
+        title: const Text('Bienvenido'),
+        backgroundColor: Colors.blue[700],
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: AppFooter(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+      body: _buildWelcomeScreen(),
+    );
+  }
+
+  Widget _buildWelcomeScreen() {
+    final String nombre = widget.userData['nombre'] ?? 'Usuario';
+    final String email = widget.userData['email'] ?? 'No disponible';
+    final int edad = widget.userData['edad'] != null
+        ? int.tryParse(widget.userData['edad'].toString()) ?? 0
+        : 0;
+
+    double peso = 0.0;
+    if (widget.userData['peso'] != null) {
+      peso = double.tryParse(widget.userData['peso'].toString()) ?? 0.0;
+    }
+
+    double altura = 0.0;
+    if (widget.userData['altura'] != null) {
+      altura = double.tryParse(widget.userData['altura'].toString()) ?? 0.0;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.blue[700]!, Colors.blue[200]!],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+              Center(
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        size: 80,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '¡Bienvenido, $nombre!',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      email,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
+
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Información Personal',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInfoRow('Edad', '$edad años', Icons.calendar_today),
+                      const Divider(),
+                      _buildInfoRow('Peso', '$peso kg', Icons.monitor_weight),
+                      const Divider(),
+                      _buildInfoRow('Altura', '$altura cm', Icons.height),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildActionButton(
+                      'Rutinas',
+                      Icons.fitness_center,
+                      Colors.orange,
+                      () {
+                        // Navegar a rutinas
+                      },
+                    ),
+                    _buildActionButton(
+                      'Nutrición',
+                      Icons.restaurant_menu,
+                      Colors.green,
+                      () {
+                        // Navegar a nutrición
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  String _getTitle() {
-    switch (_selectedIndex) {
-      case 0:
-        return 'Inicio';
-      case 1:
-        return 'Mis Rutinas';
-      case 2:
-        return 'Nutrición';
-      case 3:
-        return 'Mi Progreso';
-      case 4:
-        return 'Perfil';
-      default:
-        return 'Fitness App';
-    }
+  Widget _buildInfoRow(String title, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.blue[700]),
+          const SizedBox(width: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  List<Widget>? _getActions() {
-    switch (_selectedIndex) {
-      case 1: // Rutinas
-        return [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              // Acción para agregar nueva rutina
-            },
+  Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [color.withOpacity(0.7), color],
+            ),
           ),
-        ];
-      case 2: // Nutrición
-        return [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () {
-              // Mostrar calendario de alimentación
-            },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [              Icon(
+                icon,
+                size: 40,
+                color: Colors.white,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
-        ];
-      default:
-        return null;
-    }
+        ),
+      ),
+    );
   }
 }

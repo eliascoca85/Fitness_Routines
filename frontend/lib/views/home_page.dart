@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
+import 'nutrition_view.dart';
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -134,7 +135,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 40),
-
               Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -162,9 +162,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 30),
-
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
@@ -186,7 +184,12 @@ class _HomePageState extends State<HomePage> {
                       Icons.restaurant_menu,
                       Colors.green,
                       () {
-                        // Navegar a nutrición
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NutritionView(),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -227,7 +230,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionButton(
+      String title, IconData icon, Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Card(
@@ -246,7 +250,8 @@ class _HomePageState extends State<HomePage> {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [              Icon(
+            children: [
+              Icon(
                 icon,
                 size: 40,
                 color: Colors.white,

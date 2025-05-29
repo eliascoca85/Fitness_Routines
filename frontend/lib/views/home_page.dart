@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import 'nutrition_view.dart';
+import 'routines_view.dart';
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -176,7 +177,13 @@ class _HomePageState extends State<HomePage> {
                       Icons.fitness_center,
                       Colors.orange,
                       () {
-                        // Navegar a rutinas
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                RoutinesView(userData: widget.userData),
+                          ),
+                        );
                       },
                     ),
                     _buildActionButton(

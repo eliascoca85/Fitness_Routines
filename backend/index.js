@@ -5,6 +5,7 @@ const { Pool } = require('pg');
 
 // Importar rutas
 const userRoutes = require('./routes/userRoutes');
+const routineRoutes = require('./routes/routineRoutes');
 
 const app = express();
 const port = 3000;
@@ -13,8 +14,8 @@ const port = 3000;
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
-  database: 'fitnes',
-  password: 'vark',
+  database: 'Fitness_Routines',
+  password: '2Comidas.',
   port: 5432,
 });
 
@@ -98,6 +99,7 @@ app.post('/login', async (req, res) => {
 
 // Configurar las rutas
 app.use('/api/users', userRoutes);
+app.use('/api/routines', routineRoutes);
 
 // Middleware para manejar rutas no encontradas
 app.use((req, res, next) => {
@@ -148,4 +150,8 @@ app.listen(port, '0.0.0.0', () => {
   console.log('- /api/alergias (GET)');
   console.log('- /api/condiciones (GET)');
   console.log('- /api/users/register (POST)');
+  console.log('- /api/routines/user/:userId (GET)');
+  console.log('- /api/routines/:routineId (GET)');
+  console.log('- /api/routines/generate/:userId (POST)');
+  console.log('- /api/routines/categories/all (GET)');
 });

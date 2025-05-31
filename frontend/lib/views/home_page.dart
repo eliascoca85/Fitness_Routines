@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Future<void> _logout(BuildContext context) async {
+    
     try {
       final shouldLogout = await showDialog<bool>(
             context: context,
@@ -171,8 +172,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisSpacing: 16,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildActionButton(
+                  children: [                    _buildActionButton(
                       'Rutinas',
                       Icons.fitness_center,
                       Colors.orange,
@@ -180,8 +180,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                RoutinesView(userData: widget.userData),
+                            builder: (context) => RoutinesView(userData: widget.userData),
                           ),
                         );
                       },

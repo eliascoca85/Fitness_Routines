@@ -8,6 +8,8 @@ import 'styles/index.dart';
 import 'config_page.dart';
 
 class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
@@ -28,7 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // Estados
   String message = '';
-  String serverIP = '192.168.19.134';
+  String serverIP = '192.168.100.87';
   bool isLoading = false;
 
   // Listas para alergias y condiciones
@@ -52,7 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        serverIP = prefs.getString('server_ip') ?? '192.168.19.134';
+        serverIP = prefs.getString('server_ip') ?? '192.168.100.87';
       });
       print('IP del servidor cargada: $serverIP');
     } catch (e) {
@@ -251,7 +253,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
         return AlertDialog(
           title: Text('Selecciona tus alergias'),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             height: 300,
             child: StatefulBuilder(
@@ -319,7 +321,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
         return AlertDialog(
           title: Text('Selecciona tus condiciones de salud'),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             height: 300,
             child: StatefulBuilder(

@@ -6,6 +6,7 @@ const { Pool } = require('pg');
 // Importar rutas
 const userRoutes = require('./routes/userRoutes');
 const routineRoutes = require('./routes/routineRoutes');
+const nutritionRoutes = require('./routes/nutritionRoutes');
 
 const app = express();
 const port = 3000;
@@ -97,9 +98,71 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Endpoint para obtener alergias de un usuario específico
+app.get('/api/users/:userId/allergies', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    console.log(`Recibida solicitud de alergias para el usuario ID: ${userId}`);
+    
+    // En una implementación real, esto consulta a la base de datos tabla usuario_alergia
+    // Por ahora, usamos datos de prueba
+    const mockUserAllergies = {
+      5: [2], // usuario 5 -> alergia 2 (Gluten)
+      6: [3, 2, 5], // usuario 6 -> alergias 3, 2, 5 (Frutos secos, Gluten, Huevo)
+      7: [1, 2], // usuario 7 -> alergias 1, 2 (Lactosa, Gluten)
+      8: [1], // usuario 8 -> alergia 1 (Lactosa)
+      11: [1, 2], // usuario 11 -> alergias 1, 2 (Lactosa, Gluten)
+      // Agregamos datos de ejemplo para cualquier usuario
+      default: [1, 3] // cualquier otro usuario -> alergias 1, 3 (Lactosa, Frutos secos)
+    };
+    
+    // Si el usuario existe en nuestros datos de prueba, usamos esos datos
+    // Si no, usamos los datos por defecto
+    const userAllergyIds = mockUserAllergies[userId] || mockUserAllergies.default;
+    console.log(`Alergias encontradas para el usuario ${userId}: ${userAllergyIds}`);
+    const userAllergies = userAllergyIds.map(id => ({ usuario_id: userId, alergia_id: id }));
+    
+    res.json(userAllergies);
+  } catch (err) {
+    console.error('Error al obtener alergias del usuario:', err);
+    res.status(500).json({ success: false, message: 'Error al obtener alergias del usuario' });
+  }
+});
+
+// Endpoint para obtener condiciones médicas de un usuario específico
+app.get('/api/users/:userId/conditions', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    console.log(`Recibida solicitud de condiciones médicas para el usuario ID: ${userId}`);
+    
+    // En una implementación real, esto consulta a la base de datos tabla usuario_condicion
+    // Por ahora, usamos datos de prueba
+    const mockUserConditions = {
+      6: [1], // usuario 6 -> condición 1 (Hipertensión)
+      7: [3, 1], // usuario 7 -> condiciones 3, 1 (Asma, Hipertensión)
+      8: [4, 2], // usuario 8 -> condiciones 4, 2 (Artritis, Diabetes)
+      11: [1, 2], // usuario 11 -> condiciones 1, 2 (Hipertensión, Diabetes)
+      // Agregamos datos de ejemplo para cualquier usuario
+      default: [2, 3] // cualquier otro usuario -> condiciones 2, 3 (Diabetes, Asma)
+    };
+    
+    // Si el usuario existe en nuestros datos de prueba, usamos esos datos
+    // Si no, usamos los datos por defecto
+    const userConditionIds = mockUserConditions[userId] || mockUserConditions.default;
+    console.log(`Condiciones médicas encontradas para el usuario ${userId}: ${userConditionIds}`);
+    const userConditions = userConditionIds.map(id => ({ usuario_id: userId, condicion_id: id }));
+    
+    res.json(userConditions);
+  } catch (err) {
+    console.error('Error al obtener condiciones del usuario:', err);
+    res.status(500).json({ success: false, message: 'Error al obtener condiciones del usuario' });
+  }
+});
+
 // Configurar las rutas
 app.use('/api/users', userRoutes);
 app.use('/api/routines', routineRoutes);
+app.use('/api/nutrition', nutritionRoutes);
 
 // Middleware para manejar rutas no encontradas
 app.use((req, res, next) => {
@@ -150,8 +213,4 @@ app.listen(port, '0.0.0.0', () => {
   console.log('- /api/alergias (GET)');
   console.log('- /api/condiciones (GET)');
   console.log('- /api/users/register (POST)');
-  console.log('- /api/routines/user/:userId (GET)');
-  console.log('- /api/routines/:routineId (GET)');
-  console.log('- /api/routines/generate/:userId (POST)');
-  console.log('- /api/routines/categories/all (GET)');
 });

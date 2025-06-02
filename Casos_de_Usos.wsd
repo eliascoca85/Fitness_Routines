@@ -1,0 +1,52 @@
+@startuml Fitness_Routines_Casos_de_Uso
+
+skinparam linetype ortho
+' Definir actores
+actor "Usuario" as Usuario
+
+' Definir paquetes principales
+rectangle "Gestión de Usuarios" {
+  usecase "Registrarse" as UC1
+  usecase "Iniciar Sesión" as UC2
+  usecase "Cerrar Sesión" as UC3
+}
+
+rectangle "Rutinas de Ejercicio" {
+  usecase "Ver Mis Rutinas" as UC5
+  usecase "Generar Rutina Personalizada" as UC6
+  
+}
+
+rectangle "Plan Nutricional" {
+  usecase "Ver Plan Nutricional" as UC9
+  usecase "Ver Alimentos Recomendados" as UC10
+  usecase "Ver Alimentos a Evitar" as UC11
+  usecase "Ver Plan de Comidas" as UC12
+}
+
+rectangle "Adaptación por Condiciones de Salud" {
+  usecase "Gestionar Alergias" as UC15
+  usecase "Gestionar Condiciones" as UC16
+}
+
+' Relaciones de Usuario
+Usuario --> UC1
+Usuario --> UC2
+Usuario --> UC3
+Usuario --> UC5
+Usuario --> UC6
+Usuario --> UC9
+
+' Relaciones con adaptación por condiciones
+UC6 ..> UC16 : <<include>>
+UC9 ..> UC15 : <<include>>
+' Relaciones entre casos de uso
+UC9 ..> UC10 : <<include>>
+UC9 ..> UC11 : <<include>>
+UC9 ..> UC12 : <<include>>
+UC1 ..> UC15 : <<include>>
+UC1 ..> UC16 : <<include>>
+
+
+
+@enduml

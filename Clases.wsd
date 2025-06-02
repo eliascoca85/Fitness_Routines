@@ -1,0 +1,117 @@
+@startuml Fitness_Routines_Clase
+
+' Definición del estilo
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor White
+  ArrowColor Black
+  BorderColor Black
+}
+
+class Autenticacion {
+  -String token
+  -Date
+  +verificarCredenciales(email:String, contraseña:String): boolean
+  +generarToken(usuario:Usuario): String
+  +validarToken(token:String): boolean
+  +cerrarSesion(token:String): void
+}
+
+class Usuario {
+  -int id
+  -String nombre
+  -String email
+  -String contraseña
+  -String genero
+  -double peso
+  -double altura
+  +registrarse(datos:Map): boolean
+  +iniciarSesion(email:String, contraseña:String): boolean}
+}
+
+class CondicionMedica {
+  -int id
+  -String nombre
+  -String descripcion
+  -String recomendaciones
+}
+
+class Alergia {
+  -int id
+  -String nombre
+}
+
+
+class Rutina {
+  -int id
+  -String nombre
+  -String descripcion
+  -boolean creado_automaticamente
+  -Date fecha_creacion  
+  -int usuario_id
+  +obtenerEjercicios(): List<Ejercicio>
+  +generarRutinaPersonalizada(): boolean
+}
+
+class RutinaEjercicio {
+  -int id
+  -int rutina_id
+  -int ejercicio_id
+  -int orden_en_rutina
+}
+
+class PlanNutricion {
+  -int id
+  -String nombre
+  -String descripcion
+  -int usuario_id
+  -int calorias_diarias
+  +generarPlanPersonalizado(): boolean
+  +verificarCompatibilidadAlergias(): boolean
+}
+
+' Relaciones principales basadas en la estructura de la base de datos
+Autenticacion "1" -- "1..*" Usuario : autentica >
+Usuario "1" -- "0..*" Rutina : crea >
+Usuario "1" -- "0..1" PlanNutricion : tiene >
+Usuario "1" -- "0..*" CondicionMedica : tiene >
+Usuario "1" -- "0..*" Alergia : tiene >
+
+Rutina "1" -- "0..*" RutinaEjercicio : contiene >
+
+CondicionMedica "0..*" .. Rutina : adapta >
+Alergia "0..*" .. PlanNutricion : adapta >
+
+' Vistas de la aplicación
+class LoginView {
+  -TextEditingController emailController
+  -TextEditingController passwordController
+  -bool isLoading
+  -String errorMessage
+  +iniciarSesion(): Future<bool>
+  +navegarARegistro(): void
+  +mostrarMensajeError(mensaje:String): void
+}
+
+class RegisterView {
+  -TextEditingController nameController
+  -TextEditingController emailController
+  -TextEditingController passwordController
+  -TextEditingController confirmPasswordController
+  -List<int> alergiasSeleccionadas
+  -List<int> condicionesSeleccionadas
+  -bool isLoading
+  +registrarUsuario(): Future<bool>
+  +cargarAlergias(): void
+  +cargarCondiciones(): void
+  +validarFormulario(): boolean
+}
+
+' Relaciones con las vistas
+LoginView --> Autenticacion : utiliza
+RegisterView --> Usuario : crea
+RegisterView --> Alergia : selecciona
+RegisterView --> CondicionMedica : selecciona
+
+@enduml

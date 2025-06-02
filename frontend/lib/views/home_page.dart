@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
-import 'nutrition_view.dart';
+import 'nutrition_view_corrected.dart.';
 import 'routines_view.dart';
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const HomePage({Key? key, required this.userData}) : super(key: key);
+  const HomePage({super.key, required this.userData});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -194,7 +194,8 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const NutritionView(),
+                            builder: (context) =>
+                                NutritionView(userData: widget.userData),
                           ),
                         );
                       },

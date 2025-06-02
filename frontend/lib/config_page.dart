@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'styles/index.dart';
 
 class ConfigPage extends StatefulWidget {
+  const ConfigPage({super.key});
+
   @override
   _ConfigPageState createState() => _ConfigPageState();
 }
